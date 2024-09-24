@@ -1,0 +1,522 @@
+---
+title: "Political Attitudes"
+author: "Leona Hoxha"
+format: html
+html:
+code-fold: true
+embed-resources: true
+---
+
+```{python}
+#| label: packages-data
+#| message: false
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+```
+
+
+# Data
+
+This repo contains a subset of the European Social Survey (ESS) data. The ESS tracks the behaviours, attitudes, and beliefs of individuals across European countries. By now, there are 10 survey waves covering a period from 2002 to 2020. We will work only with the latest wave and restrict ourselves to a subset of the questions concerning some political attitudes among German citizens.
+
+Description of some of the variables:
+
+| Item     | Question                                            |
+|----------|----------------------------------------------------|
+| freehms  | Gays and lesbians free to live life as they wish  |
+| euftf    | European unification go further or gone too far  |
+| wrclmch  | How worried about climate change                   |
+| gincdif  | Government should reduce differences in income levels |
+| imueclt  | Country's cultural life undermined or enriched by immigrants |
+| lrscale  | Placement on the left-right scale                 |
+| impcntr  | Allow many/few immigrants from poorer countries outside Europe |
+| prtvfde2 | Party voted for in the last national election 2, Germany |
+
+# Loading the data 
+```{python}
+#| label: loading the CSV file
+csv_file_path = 'C:\\Users\\ADMIN\\Desktop\\Data Science Concepts and Tools\\hw-PoliticalAttitudes-leonahoxha\\data\\ESS10_DE_selection.csv'
+df= pd.read_csv(csv_file_path)
+
+df.loc[df["prtvfde2"]>7, "prtvfde2"] = np.nan
+df.loc[df["lrscale"]>10, "lrscale"] = np.nan
+df.loc[df["gincdif"]>5, "gincdif"] = np.nan
+df.loc[df["freehms"]>5, "freehms"] = np.nan
+df.loc[df["euftf"]>10, "euftf"] = np.nan
+df.loc[df["impcntr"]>4, "impcntr"] = np.nan
+df.loc[df["imueclt"]>10, "imueclt"] = np.nan
+df.loc[df["wrclmch"]>5, "wrclmch"] = np.nan
+```
+
+# Checking the data
+```{python}
+#| label: checking data
+#df.info()
+#df.columns
+#df.describe()  
+
+#are there any NaN values in the dataframe
+#df.isna().any().any()
+```
+
+# Exercise Part 1: Exploration 
+
+## Task 1a: Characterising voters
+
+```{python}
+#| label: boxplot of lrscale by party
+party_colors = {
+    1: "black",
+    2: "red",
+    3: "purple",
+    4: "green",
+    5: "yellow",
+    6: "blue",
+    7: "grey"
+}
+
+fig, ax= plt.subplots(figsize=(10, 5))
+sns.boxplot(df, x="prtvfde2" , y="lrscale", palette=party_colors)#, meanline=True,  showmeans=True)
+
+ax.set_xticklabels(["CDU/CSU", "SPD", "Linke", "Grünen", "FDP", "AfD", "Other"])
+
+ax.set_yticks(range(0, 11, 1))
+ax.set_yticklabels(["Left", "1", "2", "3", "4", "5", "6", "7", "8", "9", "Right"])
+
+#showing the mean for each of the boxplots manually
+#party_means = df.groupby('prtvfde2')['lrscale'].mean()
+#for i, mean in enumerate(party_means):
+    #ax.text(i, mean + 0.2, f"Mean: {mean:.2f}", ha='center', #va='bottom', fontsize=10, bbox=dict(facecolor='white', #edgecolor='black', boxstyle='round,pad=0.3'))
+
+plt.xlabel("Party Voted For")
+plt.ylabel("Placement on left right scale")
+plt.title("Boxplot of lrscale by Party Voted for")
+plt.show()
+```
+
+
+### Next up: Another exploratory analysis with a different variable.
+
+Now we are going to look at the variable of wrclmch which shows how worried are the voters about the climate change, and look at which party they vote for. 
+
+```{python}
+#| label: boxplot of wrclmch by party
+
+    fig, ax= plt.subplots(figsize=(10, 5))
+    sns.boxplot(df, x="prtvfde2" , y="wrclmch", palette=party_colors)#, meanline=True,  showmeans=True)
+
+    ax.set_xticklabels(["CDU/CSU", "SPD", "Linke", "Grünen", "FDP", "AfD", "Other"])
+
+    ax.set_yticks(range(1, 6, 1))
+    ax.set_yticklabels(["Not at all worried", "Not very worried", "Somewhat worried", "Very worried", "Extremely worried"])
+    
+    #showing the mean for each of the boxplots manually
+    #party_means = df.groupby('prtvfde2')['wrclmch'].mean()
+    #for i, mean in enumerate(party_means):
+        #ax.text(i, mean + 0.2, f"Mean: {mean:.2f}", ha='center', #va='bottom', fontsize=10, bbox=dict(facecolor='white', #edgecolor='black', boxstyle='round,pad=0.3'))
+    
+
+    plt.xlabel("Party Voted For")
+    plt.ylabel("How worried about climate change")
+    plt.title("Boxplot of wrclmch by Party Voted for")
+    plt.show()
+```
+
+From the boxplot graphic we can see that the voters who vote for the Green party also are the most worried for the climate change which makes sense since the Green party cares a lot about the environment. Whereas the voters of the other parties are not so worried about the climate change especially the ones from the AfD (right-wing populist) party.
+
+## Task 1b: Exploration and visualisation of two variables.
+
+### Scatterplot
+
+```{python}
+#| label: zoomed in version of scatterplot of impcntr and imueclt
+fig, ax= plt.subplots(figsize=(10, 5))
+sns.scatterplot(df, x="impcntr" , y="imueclt",alpha=0.01)
+
+ax.set_xticks(range(1, 5, 1))
+ax.set_xticklabels(["Allow many to come and live here", "Allow some", "Allow a few", "Allow none"])
+ax.set_yticks(range(0, 11, 1))
+ax.set_yticklabels(["Cultural life undermined", "1", "2", "3", "4", "5", "6", "7", "8", "9", "Cultural life enriched"])
+
+plt.xlabel("Allow many/few immigrants from poorer countries outside Europe")
+plt.ylabel("")
+plt.title("Relationship between impcntr-imueclt")
+plt.show()
+```
+
+In the scatterplot, we can see a more clear connection between the variables. People who support 'Allowing many immigrants to come and live here' also tend to believe that immigrants enrich cultural life. On the other hand, those who prefer 'Allowing none' are more likely to think that immigrants have a negative impact on cultural life.
+
+### Heatmap
+
+For the variable impcntr - Allow many/few immigrants from poorer countries outside Europe. We have these values:
+
+| Value | Category                      |
+| ----- | ------------------------------ |
+| 1     | Allow many to come and live here |
+| 2     | Allow some                     |
+| 3     | Allow a few                    |
+| 4     | Allow none                     |
+| 7     | Refusal*                       |
+| 8     | Don't know*                    |
+| 9     | No answer*                     |
+
+For the variable imueclt - Country's cultural life undermined or enriched by immigrants. We have these values:
+
+| Value | Category                    |
+| ----- | ---------------------------- |
+| 0     | Cultural life undermined    |
+| 1     | 1                          |
+| 2     | 2                          |
+| 3     | 3                          |
+| 4     | 4                          |
+| 5     | 5                          |
+| 6     | 6                          |
+| 7     | 7                          |
+| 8     | 8                          |
+| 9     | 9                          |
+| 10    | Cultural life enriched      |
+| 77    | Refusal*                    |
+| 88    | Don't know*                 |
+| 99    | No answer*                  |
+
+
+To create the heatmap table we have:
+```{python}
+#| label: table of the heatmap
+#the groupby and unstack way
+heatmap_data = df.groupby(['imueclt', 'impcntr']).size().unstack(fill_value=0)
+heatmap_data
+
+#pivot_table way
+pivot_table = df.pivot_table(index='imueclt', columns='impcntr', aggfunc='size', fill_value=0)
+pivot_table
+
+```
+
+Now plotting the table as a heatmap:
+```{python}
+#| label: heatmap of imueclt and impcntr
+fig, ax=plt.subplots(figsize=(10,7))
+sns.heatmap(data=pivot_table, annot=True, cmap='plasma',fmt='d')
+
+plt.title("Heatmap of Responses for 'Allow immigrants' and 'Impact on cultural life'")
+plt.xlabel("Impact on Cultural Life by Immigrants")
+plt.ylabel("Allow Immigrants to Come and Live Here")
+plt.show()
+
+```
+
+From this heatmap we can see that people mostly voted for "Allow some" and the "5" at imueclt (which counts as a neutral value). Therefore we can conclude people are mosty neutral about this topic, and also pro immigrants (because we can see a lighter color of the heatmap around the south-west part of it). Moreover we can also see a lighter color of the heatmap on the diagonal, which means the two variables are correlated between each other.
+
+### Correlation
+
+```{python}
+#| label: correlation coefficient between 'imueclt' and 'impcntr'
+#| message: false
+correlation = df['imueclt'].corr(df['impcntr'])
+print(correlation)
+
+```
+
+Correlation coefficient between 'imueclt' and 'impcntr' is -0.59 which means that the correlation between the variables is strong (since it's less than -0.5), and the fact that the number is negative it means that the variables are negatively correlated (with the increase of one variable, the other variable decreases and vice-versa), which makes sense since people who vote that the cultural life is enriched by immigrants(10) would also vote to allow immigrants to come and live here(1) and people who vote that the cultural life is undermined(0) by immigrants would also vote to 'allow none'(4).
+
+# Exercise Part 2: Principle Component Analysis
+## Preparing the data
+
+```{python}
+#| label: columns-checking for N/A and removing missing values for the prtvfde2 variable
+columns_to_check = ["freehms", "euftf", "wrclmch", "gincdif", "imueclt", "lrscale", "impcntr","prtvfde2"]
+
+# dropping rows with NaN values in any of the specified columns
+df = df.dropna(subset= columns_to_check, how='any', axis=0).reset_index()
+```
+
+```{python}
+#| label: creating party color mapping
+# Defining the color mapping
+party_color_map = {
+    1: "black",
+    2: "red",
+    3: "purple",
+    4: "green",
+    5: "yellow",
+    6: "blue",
+    7: "grey"
+}
+```
+
+```{python}
+#| label: adding party_color column
+# creating a new column 'party_color' based on the 'prtvfde2' column
+df["party_color"] = df["prtvfde2"].map(party_color_map)
+df
+```
+
+## Standard Scaling 
+```{python}
+#| label: standard scaling for PCA
+#selecting the specific columns
+df2 = df[["freehms", "euftf", "wrclmch", "gincdif", "imueclt", "lrscale", "impcntr"]]
+
+#now we are going to do the Standard scaling
+from sklearn.preprocessing import StandardScaler
+
+dfscaler = StandardScaler()
+X_scaled = dfscaler.fit_transform(df2)
+
+data_scaled = pd.DataFrame(X_scaled, columns=["freehms", "euftf", "wrclmch", "gincdif", "imueclt", "lrscale", "impcntr"])
+```
+
+## PCA
+
+### (1) Producing a scatter plot of the first and second PCA component
+```{python}
+#| label: PCA
+#now I will do the PCA
+from sklearn.decomposition import PCA
+pca = PCA(n_components=7)
+X_transformed = pca.fit_transform(data_scaled)
+
+data_transformed = pd.DataFrame(X_transformed, columns=["PC1","PC2","PC3","PC4","PC5","PC6","PC7"])
+```
+
+```{python}
+#| label: plotting the PCA
+legend_labels=['CDU/CSU','SPD','FDP','Bündnis 90/Die Grünen','Die Linke','AfD','Andere Partei']
+
+# creating the scatter plot
+fig, ax = plt.subplots(1,1, figsize=(10, 8))
+scatter = sns.scatterplot(data_transformed, x="PC1", y="PC2", hue=df['prtvfde2'], palette=party_color_map, alpha=0.5, ax=ax)
+
+# naming the legends from party numbers to the actual the party names
+plt.legend(handles=scatter.get_legend().legend_handles, labels=legend_labels, title="Party Voted For")
+
+# creating and showing the variable arrows
+for i, column in enumerate(data_scaled.columns):
+    arrow_length = 8  # Customize the arrow size as needed
+    plt.arrow(0, 0, pca.components_[0, i] * arrow_length, pca.components_[1, i] * arrow_length, color='black', alpha=1)
+    plt.text(pca.components_[0, i] * arrow_length, pca.components_[1, i] * arrow_length, column, fontsize=10, bbox=dict(facecolor='white', edgecolor='none', boxstyle='round', alpha=0.6))
+
+# setting axis labels with explained variance
+plt.xlabel(f'PC1 (explained variance: {pca.explained_variance_ratio_[0]:.2f})')
+plt.ylabel(f'PC2 (explained variance: {pca.explained_variance_ratio_[1]:.2f})')
+plt.show()
+```
+
+From this scatterplot, we can see a better correlation between the variables with the help of the arrows and also we can how specific parties are spread throughout the graph with the help of the color(party-color).
+For wrclmch, both PC1 & PC2 are negative and also around its arrow we can see the Green party the most. That means that this variable is negatively correlated with both principal components. In other words, as the values of this variable decrease, the corresponding scores on PC1 and PC2 will also decrease. So for the values 1-Not at all worried and 2-Not very worried (which are the smallest values) the PCAs are going to decrease thats because votes from wrclmch are very worried for the climate change.
+
+Furthermore, the variables gincdif and lrscale are positively associated with both of the components, therefore as the values of these variables increase, the values of PC1 and PC2 also tend to increase. On the other hand variables like impcntr and freehms are positively associated with PC1 but negatively associated with PC2. That means that the more their values increase, PC1 increases and PC2 decreases. And finally, variable like euftf and imeclt are positively associated with PC2 but negatively associated with PC1. That means that the more their values increase, PC2 increases and PC1 decreases.
+
+### (2) Producing a plot that shows the explained variance by each PC component. 
+```{python}
+#| label: barplot of the PCA
+plt.figure(figsize=(8, 6))
+explained_variance = pca.explained_variance_ratio_
+plt.bar(range(1, len(explained_variance) + 1), explained_variance, color="purple")
+plt.xlabel('Principal Component')
+plt.ylabel('Explained Variance')
+plt.title('Explained Variance by Principal Component')
+plt.show()
+```
+
+In my opinion, we need all 5 to 6 of the first PCAs to sufficiently explain the variance for the respondents' political attitudes because if we sum up all the explained variance of them, we get around 90% of the explained variance.
+
+### (3) Visualising the vectors of the principle components 1 to 3.
+```{python}
+#| label: heatmap of PCA loadings
+loadings = pca.components_[:3]
+loadings_df = pd.DataFrame(loadings, columns=df2.columns, index=["PC1", "PC2", "PC3"])
+
+# now plotting the loadings as a heatmap
+plt.figure(figsize=(12, 6))
+sns.heatmap(loadings_df, annot=True, cmap='PuOr', center=0)
+plt.title("Loadings of Principal Components 1 to 3")
+plt.xlabel("Original Features")
+plt.ylabel("Principal Components")
+plt.show()
+```
+
+PC1 describes the largest varience between the variables which are shown in the heatmap, and variables freehms, gincdif, lrscale, impcntr are positively with PC1 whereas euftf, wrclmch and imueclt are negatively associated with it. 
+In our example, PC1 represents the combination of votes that is the most pronounced in our data for each of the variables.
+For PC1, the top loaded variable is imueclt and the least one is the gincdif. This means that imueclt variable has the biggest impact on PC1, whereas the wrclmch has the least contribute to PC1.
+
+
+# Exercise Part 3: Logistic Regression
+
+## Wrangling and preprocessing
+
+```{python}
+#2.
+#| label: setting with parties are left-parties and then creating the left_vote variable as a dummy variable 
+left_party_codes = [2, 3, 4]
+df['left_vote'] = df['prtvfde2'].isin(left_party_codes).astype(int)
+```
+
+```{python}
+#3.
+#| label: creating the X and y matrix with specific columns from the df dataframe
+X = df[["imueclt", "euftf", "lrscale", "wrclmch", "gincdif", "freehms", "impcntr"]]
+
+#target data left_vote
+y = df['left_vote']
+```
+
+```{python}
+# 4.
+#| label: standardscaling the X matrix using StandardScaler
+#importing StandardScaler again
+from sklearn.preprocessing import StandardScaler
+
+# scaling the X matrix
+scalerX = StandardScaler()
+scalerX.fit(X)
+X_scaled = scalerX.transform(X)
+```
+
+## Regression model and understanding the model
+```{python}
+#5.
+#| label: splitting the data for both X and y into training data and test data
+
+from sklearn.model_selection import train_test_split
+
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2)
+```
+
+```{python}
+#6.
+#| label: using the logistic regression 
+from sklearn.linear_model import LogisticRegression
+
+# creating a logistic regression classifier
+log_reg = LogisticRegression()
+
+# fitting the logistic regression model to the training data
+log_reg.fit(X_train, y_train)
+
+# predicting probabilities for the test data
+y_pred_proba_test = log_reg.predict_proba(X_test)[:, 1]
+```
+
+We care about the Left_Vote that's why we are taking the second column("[;, 1], which has the probability for the left_vote).
+
+```{python}
+#7.
+#| label: creating y_pred_proba column in the df dataframe basing the data from X_scaled
+# this new column shows the probability that  of each observation 
+df['y_pred_proba'] = log_reg.predict_proba(X_scaled)[:, 1]
+```
+
+```{python}
+#8.
+#| label: probability to vote for a left party in a boxplot
+# combining the actual and predicted values for the test data
+combined_data = pd.DataFrame({'Actual': y_test, 'Prediction for Left_vote': y_pred_proba_test})
+
+# creating a boxplot to visualize the probabilities
+plt.figure(figsize=(10,8))
+sns.boxplot(data=combined_data, x='Actual', y='Prediction for Left_vote', palette={0: 'darkorange', 1: 'darkviolet'})
+
+plt.xlabel("Actual Vote (0 = Not Left, 1 = Left)")
+plt.ylabel("Predicted Probability to Vote for a Left Party")
+plt.title("Actual vs. Predicted Probability to Vote for a Left Party")
+plt.show()
+```
+
+```{python}
+#9.
+#| label: The top 3 variables in our logistic model
+# the coefficients from the logistic regression model
+coefficients = log_reg.coef_[0]
+
+# creating a dataFrame to pair coefficients with variable names
+coefficients_df = pd.DataFrame({'Variable': X.columns, 'Coefficient': coefficients})
+
+# sorting the coefficients_df dataFrame by the value of coefficients to find the most important predictors
+top_3_predictors = coefficients_df.reindex(coefficients_df['Coefficient'].abs().sort_values(ascending=False).index)[:3]
+
+print("The three most important predictor variables and their coefficients:")
+top_3_predictors
+```
+
+We can see that the variables which have the biggest impact of the prediction in our model are lrscale, gincdif and wrclmch. These variables are expected to show up here, especially lrscale because it all has to do with the left and right party (theres a very high chance that the left party voters also voted the "left" values in the lrscale variable). Moreover, most of the left voters have the **same** view for the "How worried about climate change" and "	Government should reduce differences in income levels" so that's why these variables were high indicators for our prediction in our model. 
+
+## Prediction and decision-making
+```{python}
+#10.
+#| label: showing the actual vs. predicted with custom threshold
+y_pred_proba = log_reg.predict_proba(X_test)[:, 1]
+y_pred_threshold = (y_pred_proba >= 0.9).astype(int)
+
+# creating a dataFrame to compare actual vs. predicted values
+prediction_comparison = pd.DataFrame({'Actual': y_test, 'Predicted': y_pred_threshold})
+
+print("Actual vs. Predicted (with custom threshold) for left_vote:")
+print(prediction_comparison)
+
+# calculating the accuracy by comparing actual vs. predicted
+accuracy = (prediction_comparison['Actual'] == prediction_comparison['Predicted']).mean()
+print(f"Model Accuracy: {accuracy:.2f}")
+
+```
+
+```{python}
+#11.
+#| label: The confusion matrix
+from sklearn.metrics import confusion_matrix
+
+# defining  the list of thresholds
+thresholds = [0.1, 0.25, 0.5, 0.75, 0.9]
+
+# creating a function to calculate and print the confusion matrix for a given threshold
+def calculate_confusion_matrix(threshold):
+    y_pred_threshold = (y_pred_proba >= threshold).astype(int)
+    cm = confusion_matrix(y_test, y_pred_threshold)
+    print(f"Threshold = {threshold}")
+    print(cm)
+    specificity = cm[0, 0] / (cm[0, 0] + cm[0, 1])
+    sensitivity = cm[1, 1] / (cm[1, 0] + cm[1, 1])
+    print(f"Specificity (True Negative Rate): {specificity:.2f}")
+    print(f"Sensitivity (True Positive Rate): {sensitivity:.2f}")
+    print("\n") #adding a space between each threshold
+
+# calculating and print confusion matrices for different thresholds
+for threshold in thresholds:
+    calculate_confusion_matrix(threshold)
+
+```
+
+Sensitivity (True positive Rate) tells us the percentage of voters who voted for the Left party were correctly identified by our logistic regression model. In our case we have the best sensitivity rate when our Threshold = 0.1. On the other hand, specificity (True Negative Rate) tells us the percentage of voters who voted for the right party were correctly identified by our model. We have the best specificity rate when our threshold is Threshold = 0.9.
+However, we want the best from both of the rates, therefore we pick the threshold of 0.5 because if we sum up both of the rates we get 1.47 (the best option).
+
+```{python}
+#12.
+#| label: ROC Curve and AUC
+from sklearn.metrics import roc_curve, roc_auc_score
+import matplotlib.pyplot as plt
+
+# calculating the ROC curve
+fpr, tpr, thresholds = roc_curve(y_test, y_pred_proba)
+
+# calculating the AUC (Area Under the Curve)
+roc_auc = roc_auc_score(y_test, y_pred_proba)
+
+# plotting the ROC curve
+plt.figure(figsize=(8, 6))
+plt.plot(fpr, tpr, color='darkorange', lw=2, label=f'ROC curve (AUC = {roc_auc:.2f})')
+plt.plot([0, 1], [0, 1], color='darkviolet', lw=2, linestyle='--')
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('False Positive Rate (1 - Specificity)')
+plt.ylabel('True Positive Rate (Sensitivity)')
+plt.title('ROC Curve')
+plt.legend(loc="lower right")
+plt.show()
+
+print(f"AUC (Area Under the Curve): {roc_auc:.2f}")
+```
+
+Which means that our model is pretty good since it is above 0.8
